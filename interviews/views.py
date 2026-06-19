@@ -8,7 +8,9 @@ and serializer orchestration.
 
 from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 
 from . import services
@@ -177,3 +179,24 @@ class InterviewSessionViewSet(viewsets.ModelViewSet):
             context=self.get_serializer_context(),
         )
         return Response(detail_serializer.data)
+
+
+class ExecuteCodeView(APIView):
+    """
+    POST /api/interviews/execute/
+    Executes a given set of files and returns standard output/error.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        language = request.data.get("language")
+        files = request.data.get("files", [])
+        
+        if not language or not files:
+            return Response(
+                {"detail": "Language and files array are required."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        result = services.execute_code(language, files)
+        return Response(result)

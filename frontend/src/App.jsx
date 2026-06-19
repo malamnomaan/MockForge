@@ -18,6 +18,7 @@ import ExamSetup from './pages/app/ExamSetup';
 import InterviewWorkspace from './pages/app/InterviewWorkspace';
 import SessionDetail from './pages/app/SessionDetail';
 import Profile from './pages/app/Profile';
+import Interviews from './pages/app/Interviews';
 
 function PublicLayout({ children }) {
   return (
@@ -48,7 +49,7 @@ function App() {
           <Route element={<DashboardLayout />}>
             <Route index element={<Dashboard />} />
             <Route path="setup" element={<ExamSetup />} />
-            <Route path="interviews" element={<Navigate to="/app" />} /> {/* Replace with list page later */}
+            <Route path="interviews" element={<Interviews />} />
             <Route path="session/:id" element={<SessionDetail />} />
             <Route path="profile" element={<Profile />} />
           </Route>

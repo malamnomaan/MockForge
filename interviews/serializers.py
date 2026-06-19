@@ -99,6 +99,10 @@ class InterviewSessionListSerializer(serializers.ModelSerializer):
     get_type_display = serializers.CharField(
         read_only=True,
     )
+    evaluations = AIEvaluationSerializer(
+        many=True,
+        read_only=True,
+    )
 
     class Meta:
         model = InterviewSession
@@ -110,7 +114,9 @@ class InterviewSessionListSerializer(serializers.ModelSerializer):
             "get_type_display",
             "language",
             "difficulty",
+            "violations",
             "created_at",
+            "evaluations",
         ]
         read_only_fields = fields
 
@@ -123,18 +129,12 @@ class InterviewSessionDetailSerializer(InterviewSessionListSerializer):
     related AI evaluations.
     """
 
-    evaluations = AIEvaluationSerializer(
-        many=True,
-        read_only=True,
-    )
-
     class Meta(InterviewSessionListSerializer.Meta):
         fields = InterviewSessionListSerializer.Meta.fields + [
             "question",
             "answer",
             "chat_history",
             "updated_at",
-            "evaluations",
         ]
         read_only_fields = fields
 
@@ -181,7 +181,7 @@ class InterviewSessionUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = InterviewSession
-        fields = ["answer"]
+        fields = ["answer", "violations"]
 
     def update(self, instance, validated_data):
         """Delegate session update to the service layer."""

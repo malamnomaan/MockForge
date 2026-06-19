@@ -154,6 +154,7 @@ class InterviewSession(models.Model):
         blank=True,
         help_text="Stores the conversation history with the AI agent.",
     )
+    violations = models.PositiveIntegerField("violations", default=0, help_text="Number of anti-cheat violations detected.")
     created_at = models.DateTimeField("created at", auto_now_add=True)
     updated_at = models.DateTimeField("updated at", auto_now=True)
 

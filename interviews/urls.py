@@ -14,6 +14,7 @@ from .views import (
     StatusDetailView,
     StatusListView,
     StatusTransitionsView,
+    ExecuteCodeView,
 )
 
 app_name = "interviews"
@@ -28,6 +29,11 @@ urlpatterns = [
         "statuses/<str:code>/transitions/",
         StatusTransitionsView.as_view(),
         name="status-transitions",
+    ),
+    path(
+        "execute/",
+        ExecuteCodeView.as_view(),
+        name="execute-code",
     ),
     path("", include(router.urls)),
 ]
