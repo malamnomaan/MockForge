@@ -7,7 +7,8 @@ All business logic is delegated to :mod:`interviews.services`.
 
 from rest_framework import serializers
 
-from . import services
+from .bll import start_interview
+from .services.interview_db_service import update_session
 from .models import AIEvaluation, InterviewSession, Status, StatusTransition
 
 
@@ -166,7 +167,7 @@ class InterviewSessionCreateSerializer(serializers.Serializer):
     def create(self, validated_data):
         """Delegate session creation to the service layer."""
         user = self.context["request"].user
-        return services.create_session(
+        return start_interview(
             user=user,
             interview_type=validated_data["type"],
             question=validated_data["question"],
@@ -187,7 +188,7 @@ class InterviewSessionUpdateSerializer(serializers.ModelSerializer):
 
     def update(self, instance, validated_data):
         """Delegate session update to the service layer."""
-        return services.update_session(instance, validated_data)
+        return update_session(instance, validated_data)
 
 
 # ---------------------------------------------------------------------------

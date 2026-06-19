@@ -41,7 +41,9 @@ class TriggerEvaluationViewTests(APITestCase):
     def test_trigger_evaluation_success(self):
         self.client.force_authenticate(user=self.user)
         response = self.client.post(self.url)
-        
+        print("URL:", self.url)
+        print("RESPONSE STATUS:", response.status_code)
+        print("RESPONSE DATA:", getattr(response, "data", "No data"))
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertIn("score", response.data)
         self.assertIn("strengths", response.data)
@@ -97,8 +99,8 @@ class SessionEvaluationsViewTests(APITestCase):
 
     def test_list_evaluations_success(self):
         # Create some evaluations
-        AIEvaluation.objects.create(interview=self.session, score=80, raw_response={})
-        AIEvaluation.objects.create(interview=self.session, score=90, raw_response={})
+        AIEvaluation.objects.create(interview=self.session, final_score=80, raw_response={})
+        AIEvaluation.objects.create(interview=self.session, final_score=90, raw_response={})
         
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.url)

@@ -101,11 +101,18 @@ def create_interview_statuses():
         order=2,
         is_terminal=False,
     )
+    evaluating = create_status(
+        code="INTERVIEW_EVALUATING",
+        name="Evaluating",
+        category="INTERVIEW",
+        order=3,
+        is_terminal=False,
+    )
     evaluated = create_status(
         code="INTERVIEW_EVALUATED",
         name="Evaluated",
         category="INTERVIEW",
-        order=3,
+        order=4,
         is_terminal=True,
     )
 
@@ -117,13 +124,17 @@ def create_interview_statuses():
         from_status=in_progress, to_status=submitted, is_active=True,
     )
     StatusTransition.objects.create(
-        from_status=submitted, to_status=evaluated, is_active=True,
+        from_status=submitted, to_status=evaluating, is_active=True,
+    )
+    StatusTransition.objects.create(
+        from_status=evaluating, to_status=evaluated, is_active=True,
     )
 
     return {
         "INTERVIEW_CREATED": created,
         "INTERVIEW_IN_PROGRESS": in_progress,
         "INTERVIEW_SUBMITTED": submitted,
+        "INTERVIEW_EVALUATING": evaluating,
         "INTERVIEW_EVALUATED": evaluated,
     }
 
@@ -166,7 +177,7 @@ def create_interview_session(
 
 def create_ai_evaluation(
     interview,
-    score=75,
+    final_score=75,
     strengths=None,
     weaknesses=None,
     improvements=None,
@@ -176,7 +187,7 @@ def create_ai_evaluation(
     """Create and return an AIEvaluation."""
     return AIEvaluation.objects.create(
         interview=interview,
-        score=score,
+        final_score=final_score,
         strengths=strengths or ["Good approach"],
         weaknesses=weaknesses or ["Needs improvement"],
         improvements=improvements or ["Practice more"],
