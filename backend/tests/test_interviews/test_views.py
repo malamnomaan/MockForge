@@ -44,8 +44,8 @@ class InterviewsViewsTests(APITestCase):
         data = {"type": "DSA", "question": "Reverse a linked list"}
         response = self.client.post(self.session_list_url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(response.data["question"], "Reverse a linked list")
-        self.assertEqual(response.data["status"]["code"], "INTERVIEW_CREATED")
+        self.assertEqual(response.data["data"]["question"], "Reverse a linked list")
+        self.assertEqual(response.data["data"]["status"]["code"], "INTERVIEW_CREATED")
 
     def test_list_sessions_returns_own_only(self):
         # Create a session for other user
@@ -54,11 +54,13 @@ class InterviewsViewsTests(APITestCase):
         self.client.force_authenticate(user=self.user)
         response = self.client.get(self.session_list_url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        data = response.data.get('results', response.data)
+        data = response.data["data"]
         self.assertEqual(len(data), 1)  # Only the one from setUp
 
     def test_update_session_submit_answer(self):
         self.client.force_authenticate(user=self.user)
+        self.session.status = self.statuses["INTERVIEW_IN_PROGRESS"]
+        self.session.save()
         response = self.client.patch(self.session_detail_url, {"answer": "My answer"})
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.session.refresh_from_db()
