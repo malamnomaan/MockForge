@@ -62,20 +62,12 @@ def create_session(
     user,
     interview_type: str,
     question: str,
+    language: str = "",
+    difficulty: str = "",
 ) -> InterviewSession:
     """
     Create a new ``InterviewSession`` for *user*.
-
-    The session is automatically assigned the initial interview status
-    (lowest ``order`` in the INTERVIEW category).
-
-    Args:
-        user: The authenticated user starting the interview.
-        interview_type: One of ``InterviewSession.InterviewType`` values.
-        question: The interview question text.
-
-    Returns:
-        The newly created ``InterviewSession`` instance.
+    ...
     """
     initial_status = get_initial_status(category="INTERVIEW")
     return InterviewSession.objects.create(
@@ -83,6 +75,8 @@ def create_session(
         status=initial_status,
         type=interview_type,
         question=question,
+        language=language,
+        difficulty=difficulty,
     )
 
 

@@ -70,43 +70,17 @@ def trigger_evaluation(session_id: int, user) -> AIEvaluation:
             }
         )
 
-    # --- Mock evaluation data (stub) -------------------------------------
-    score = random.randint(40, 95)
-
-    strengths = [
-        "Good problem decomposition",
-        "Clean code structure",
-        "Efficient time complexity",
-    ]
-
-    weaknesses = [
-        "Could improve space complexity",
-        "Edge cases not fully covered",
-    ]
-
-    improvements = [
-        "Practice more graph problems",
-        "Review dynamic programming patterns",
-        "Work on explaining thought process",
-    ]
-
-    raw_response = {
-        "model": "mock-gpt-4",
-        "usage": {
-            "prompt_tokens": 500,
-            "completion_tokens": 300,
-        },
-        "mock": True,
-    }
+    from .bll import evaluator_agent
+    eval_data = evaluator_agent.generate_evaluation(session)
 
     # --- Persist and return ----------------------------------------------
     evaluation = AIEvaluation.objects.create(
         interview=session,
-        score=score,
-        strengths=strengths,
-        weaknesses=weaknesses,
-        improvements=improvements,
-        raw_response=raw_response,
+        score=eval_data.get("score", 0),
+        strengths=eval_data.get("strengths", []),
+        weaknesses=eval_data.get("weaknesses", []),
+        improvements=eval_data.get("improvements", []),
+        raw_response=eval_data,
     )
 
     return evaluation

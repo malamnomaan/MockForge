@@ -108,6 +108,8 @@ class InterviewSessionListSerializer(serializers.ModelSerializer):
             "status",
             "type",
             "get_type_display",
+            "language",
+            "difficulty",
             "created_at",
         ]
         read_only_fields = fields
@@ -130,6 +132,7 @@ class InterviewSessionDetailSerializer(InterviewSessionListSerializer):
         fields = InterviewSessionListSerializer.Meta.fields + [
             "question",
             "answer",
+            "chat_history",
             "updated_at",
             "evaluations",
         ]
@@ -155,6 +158,8 @@ class InterviewSessionCreateSerializer(serializers.Serializer):
     question = serializers.CharField(
         help_text="The interview question text.",
     )
+    language = serializers.CharField(required=False, allow_blank=True)
+    difficulty = serializers.CharField(required=False, allow_blank=True)
 
     def create(self, validated_data):
         """Delegate session creation to the service layer."""
@@ -163,6 +168,8 @@ class InterviewSessionCreateSerializer(serializers.Serializer):
             user=user,
             interview_type=validated_data["type"],
             question=validated_data["question"],
+            language=validated_data.get("language", ""),
+            difficulty=validated_data.get("difficulty", ""),
         )
 
 

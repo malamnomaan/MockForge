@@ -9,8 +9,10 @@ service layer in ``ai_engine.services``.
 from rest_framework import generics, status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from ai_engine import services
+from ai_engine.bll import interview_agent
 from ai_engine.serializers import AIEvaluationSerializer, TriggerEvaluationSerializer
 
 
@@ -73,3 +75,36 @@ class SessionEvaluationsView(generics.ListAPIView):
             session_id=session_id,
             user=self.request.user,
         )
+
+from django.shortcuts import get_object_or_404
+from interviews.models import InterviewSession
+from django.http import Http404
+
+class ChatAPIView(APIView):
+    """
+    POST /api/ai/chat/{session_id}/
+    Send a message to the AI interviewer and receive its response.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, session_id):
+        session = get_object_or_404(InterviewSession, id=session_id)
+        
+        # Security: only owner can chat
+        if session.user != request.user:
+            raise Http404("No Session matches the given query.")
+            
+        message = request.data.get('message', '')
+        if not message:
+            return Response(
+                {"detail": "Message is required."}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        ai_reply = interview_agent.process_interview_chat(session, message)
+        
+        return Response({
+            "reply": ai_reply,
+            "chat_history": session.chat_history
+        })
+

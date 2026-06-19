@@ -124,6 +124,8 @@ class InterviewSession(models.Model):
     class InterviewType(models.TextChoices):
         DSA = "DSA", "Data Structures & Algorithms"
         SYSTEM_DESIGN = "SYSTEM_DESIGN", "System Design"
+        RAPID_FIRE = "RAPID_FIRE", "Rapid Fire QnA"
+        SKILL_BASED = "SKILL_BASED", "Skill Based"
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -142,8 +144,16 @@ class InterviewSession(models.Model):
         max_length=30,
         choices=InterviewType.choices,
     )
+    language = models.CharField("language", max_length=50, blank=True, null=True, help_text="Programming language (e.g., Python, Java)")
+    difficulty = models.CharField("difficulty", max_length=50, blank=True, null=True, help_text="Experience level mapping (e.g., Easy, Expert)")
     question = models.TextField("question")
     answer = models.TextField("answer", blank=True, null=True)
+    chat_history = models.JSONField(
+        "chat history",
+        default=list,
+        blank=True,
+        help_text="Stores the conversation history with the AI agent.",
+    )
     created_at = models.DateTimeField("created at", auto_now_add=True)
     updated_at = models.DateTimeField("updated at", auto_now=True)
 
