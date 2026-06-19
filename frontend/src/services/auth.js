@@ -26,6 +26,11 @@ export const authService = {
     return response.data;
   },
 
+  async getAchievements() {
+    const response = await api.get('/accounts/profile/achievements/');
+    return response.data;
+  },
+
   async updateProfile(data) {
     const response = await api.patch('/accounts/profile/', data);
     return response.data;

@@ -9,8 +9,10 @@ logic themselves.
 from rest_framework import generics, status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 
 from . import services
+from .badge_engine import get_user_achievements
 from .serializers import (
     ChangePasswordSerializer,
     RegisterSerializer,
@@ -77,3 +79,11 @@ class ChangePasswordView(generics.GenericAPIView):
             {"detail": "Password updated successfully."},
             status=status.HTTP_200_OK,
         )
+
+class ProfileAchievementsView(APIView):
+    """Retrieve user achievements and stats."""
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        data = get_user_achievements(request.user)
+        return Response(data)

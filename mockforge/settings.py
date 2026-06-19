@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'accounts',
     'interviews',
     'ai_engine',
+    'problems',
 ]
 
 MIDDLEWARE = [
