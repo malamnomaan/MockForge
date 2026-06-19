@@ -20,6 +20,7 @@ db.sqlite3-journal
 node_modules/
 dist/
 build/
+.vite/
 .env.local
 .env.development.local
 .env.test.local
