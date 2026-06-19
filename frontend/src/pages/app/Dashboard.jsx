@@ -111,7 +111,7 @@ export default function Dashboard() {
       const name = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
       const ev = s.evaluations[0];
       
-      const sScore = ev.score || 0;
+      const sScore = ev.final_score || 0;
       const sViolations = s.violations || 0;
       const rawS = Array.isArray(ev.strengths) ? ev.strengths : (ev.strengths ? [ev.strengths] : []);
       const rawW = Array.isArray(ev.weaknesses) ? ev.weaknesses : (ev.weaknesses ? [ev.weaknesses] : []);

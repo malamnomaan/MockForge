@@ -100,9 +100,25 @@ export default function SessionDetail() {
           ) : evaluation ? (
             <div className="flex-col gap-md">
               <Card hover={false} style={{ padding: '1.5rem', borderColor: 'var(--accent-primary)', position: 'relative' }}>
-                <h3 className="heading-3" style={{ marginBottom: '1rem', fontSize: '1.25rem' }}>AI Score</h3>
+                <h3 className="heading-3" style={{ marginBottom: '1rem', fontSize: '1.25rem', display: 'flex', alignItems: 'center' }}>
+                  AI Score
+                  {evaluation.verdict && (
+                    <span style={{
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '4px',
+                      fontSize: '0.75rem',
+                      fontWeight: 600,
+                      textTransform: 'uppercase',
+                      marginLeft: '1rem',
+                      background: evaluation.verdict === 'hire' ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)',
+                      color: evaluation.verdict === 'hire' ? '#10b981' : '#ef4444'
+                    }}>
+                      {evaluation.verdict.replace('_', ' ')}
+                    </span>
+                  )}
+                </h3>
                 <div className="text-gradient" style={{ fontSize: '4rem', fontWeight: 'bold', lineHeight: 1 }}>
-                  {evaluation.score}/100
+                  {evaluation.final_score}/100
                 </div>
 
                 <div style={{ 
@@ -138,9 +154,27 @@ export default function SessionDetail() {
               <Card hover={false} style={{ padding: '1.5rem' }}>
                 <h3 className="heading-3" style={{ marginBottom: '1rem', fontSize: '1.25rem', color: 'var(--accent-primary)' }}>Improvements</h3>
                 <ul className="text-secondary" style={{ paddingLeft: '1.5rem' }}>
-                  {evaluation.improvements ? evaluation.improvements.map((imp, i) => <li key={i}>{imp}</li>) : <li>No improvements suggested.</li>}
+                  {evaluation.improvements.map((imp, i) => (
+                    <li key={i} style={{ marginBottom: '0.5rem', color: '#64748b' }}>{imp}</li>
+                  ))}
                 </ul>
               </Card>
+
+              {evaluation.scores && Object.keys(evaluation.scores).length > 0 && (
+                <Card hover={false} style={{ padding: '1.5rem' }}>
+                  <h4 style={{ marginBottom: '1rem', fontSize: '1rem', color: '#94a3b8' }}>Detailed Score Breakdown</h4>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1rem' }}>
+                    {Object.entries(evaluation.scores).map(([category, catScore]) => (
+                      <div key={category} style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '8px' }}>
+                        <div style={{ fontSize: '0.75rem', textTransform: 'uppercase', color: '#64748b', marginBottom: '0.5rem' }}>
+                          {category.replace(/_/g, ' ')}
+                        </div>
+                        <div style={{ fontSize: '1.25rem', fontWeight: 600 }}>{catScore}/100</div>
+                      </div>
+                    ))}
+                  </div>
+                </Card>
+              )}
             </div>
           ) : (
             <Card hover={false} style={{ padding: '1.5rem', textAlign: 'center' }}>

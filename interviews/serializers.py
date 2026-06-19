@@ -68,16 +68,18 @@ class AIEvaluationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = AIEvaluation
-        fields = [
+        fields = (
             "id",
             "interview",
-            "score",
+            "final_score",
+            "scores",
+            "verdict",
             "strengths",
             "weaknesses",
             "improvements",
             "raw_response",
             "created_at",
-        ]
+        )
         read_only_fields = fields
 
 

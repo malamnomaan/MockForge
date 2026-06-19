@@ -14,6 +14,7 @@ from rest_framework.views import APIView
 from ai_engine import services
 from ai_engine.bll import interview_agent
 from ai_engine.serializers import AIEvaluationSerializer, TriggerEvaluationSerializer
+from interviews.bll import trigger_evaluation
 
 
 class TriggerEvaluationView(generics.CreateAPIView):
@@ -42,13 +43,16 @@ class TriggerEvaluationView(generics.CreateAPIView):
         serializer.is_valid(raise_exception=True)
 
         session_id = self.kwargs["session_id"]
-        evaluation = services.trigger_evaluation(
-            session_id=session_id,
-            user=request.user,
-        )
+        
+        # Look up session
+        session = get_object_or_404(InterviewSession, pk=session_id, user=request.user)
+        
+        result = trigger_evaluation(session)
 
-        output_serializer = AIEvaluationSerializer(evaluation)
-        return Response(output_serializer.data, status=status.HTTP_201_CREATED)
+        return Response({
+            "success": True,
+            "data": result
+        }, status=status.HTTP_201_CREATED)
 
 
 class SessionEvaluationsView(generics.ListAPIView):

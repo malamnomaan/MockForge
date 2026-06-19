@@ -94,6 +94,26 @@ a:hover {
   color: var(--accent-primary);
 }
 
+/* Form Elements */
+select {
+  appearance: none;
+  background-color: rgba(0,0,0,0.3);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-border);
+  padding: 0.5rem;
+  border-radius: var(--radius-sm);
+  outline: none;
+}
+
+select:focus {
+  border-color: var(--accent-primary);
+}
+
+select option {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+}
+
 /* Typography Utilities */
 .heading-1 {
   font-size: 4.5rem;

@@ -129,8 +129,6 @@ export default function InterviewWorkspace() {
     setSubmitting(true);
     try {
       await interviewService.submitAnswer(id, JSON.stringify(files), warnings);
-      await interviewService.transitionStatus(id, 'INTERVIEW_SUBMITTED');
-      await interviewService.transitionStatus(id, 'INTERVIEW_EVALUATED');
       await aiService.triggerEvaluation(id);
       navigate(`/app/session/${id}`);
     } catch (error) {
