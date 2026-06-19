@@ -49,8 +49,8 @@ export default function Interviews() {
                       <span>Status: <strong style={{ color: 'var(--text-primary)' }}>{session.status.name}</strong></span>
                       <span>Date: {d.toLocaleDateString()}</span>
                       {session.evaluations && session.evaluations.length > 0 && (
-                        <span style={{ color: 'var(--accent-primary)', fontWeight: 'bold' }}>
-                          Score: {session.evaluations[0].score}/100
+                        <span style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--accent-primary)' }}>
+                          Score: {session.evaluations[0].final_score}/100
                         </span>
                       )}
                     </div>

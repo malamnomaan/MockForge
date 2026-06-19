@@ -15,6 +15,8 @@ import ProtectedRoute from './components/layout/ProtectedRoute';
 import DashboardLayout from './components/layout/DashboardLayout';
 import Dashboard from './pages/app/Dashboard';
 import ExamSetup from './pages/app/ExamSetup';
+import Curriculum from './pages/app/Curriculum';
+import ProblemWorkspace from './pages/app/ProblemWorkspace';
 import InterviewWorkspace from './pages/app/InterviewWorkspace';
 import SessionDetail from './pages/app/SessionDetail';
 import Profile from './pages/app/Profile';
@@ -50,6 +52,8 @@ function App() {
             <Route index element={<Dashboard />} />
             <Route path="setup" element={<ExamSetup />} />
             <Route path="interviews" element={<Interviews />} />
+            <Route path="problems" element={<Curriculum />} />
+            <Route path="problems/:id" element={<ProblemWorkspace />} />
             <Route path="session/:id" element={<SessionDetail />} />
             <Route path="profile" element={<Profile />} />
           </Route>

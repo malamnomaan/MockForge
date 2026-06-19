@@ -4,8 +4,9 @@ import SEO from '../../components/SEO';
 import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { AreaChart, Area, BarChart, Bar, Legend, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { Play, TrendingUp, AlertTriangle, Activity } from 'lucide-react';
+import { Play, TrendingUp, AlertTriangle, Activity, Code, LayoutDashboard as LayoutDashboardIcon } from 'lucide-react';
 import { interviewService } from '../../services/interviews';
+import { problemsService } from '../../services/problems';
 
 const FeedbackTooltip = ({ active, payload, label }) => {
   if (active && payload && payload.length) {
@@ -40,18 +41,23 @@ export default function Dashboard() {
   const [hoveredDay, setHoveredDay] = useState(null);
   const [topStrengths, setTopStrengths] = useState([]);
   const [topWeaknesses, setTopWeaknesses] = useState([]);
+  const [totalProblems, setTotalProblems] = useState(0);
 
   useEffect(() => {
-    interviewService.getSessions()
-      .then(data => {
-        const sess = data.results || data;
-        setSessions(sess);
-        calculateAnalytics(sess);
-      })
-      .catch(console.error);
+    Promise.all([
+      interviewService.getSessions(),
+      problemsService.getSubmissions(),
+      problemsService.getLevels()
+    ]).then(([sessData, subData, levelsData]) => {
+      const sess = sessData.results || sessData;
+      const subs = subData || [];
+      setSessions(sess);
+      setTotalProblems(levelsData.total_problems_solved || 0);
+      calculateAnalytics(sess, subs);
+    }).catch(console.error);
   }, []);
 
-  const calculateAnalytics = (sessList) => {
+  const calculateAnalytics = (sessList, subList) => {
     // Calculate 35-day calendar heatmap (5 full weeks aligned to Sunday)
     const daysMap = {};
     const today = new Date();
@@ -65,10 +71,10 @@ export default function Dashboard() {
     for(let i=0; i<35; i++) {
       const d = new Date(startDate);
       d.setDate(startDate.getDate() + i);
-      daysMap[d.toDateString()] = { date: d, count: 0, isFuture: d > today };
+      daysMap[d.toDateString()] = { date: d, count: 0, isFuture: d > today, subs: 0 };
     }
 
-    // Populate actual counts
+    // Populate actual counts for interviews
     sessList.forEach(s => {
       const d = new Date(s.created_at);
       d.setHours(0,0,0,0);
@@ -77,6 +83,24 @@ export default function Dashboard() {
         daysMap[dateStr].count += 1;
       }
     });
+
+    // Populate actual counts for problem submissions
+    const dailyUniqueProblems = {};
+    subList.forEach(s => {
+      const d = new Date(s.created_at);
+      d.setHours(0,0,0,0);
+      const dateStr = d.toDateString();
+      if (!dailyUniqueProblems[dateStr]) dailyUniqueProblems[dateStr] = new Set();
+      dailyUniqueProblems[dateStr].add(s.problem);
+    });
+
+    for (const [dateStr, problemSet] of Object.entries(dailyUniqueProblems)) {
+      if(daysMap[dateStr]) {
+        const uniqueCount = problemSet.size;
+        daysMap[dateStr].subs += uniqueCount;
+        daysMap[dateStr].count += uniqueCount; // Activity counts for heatmap intensity
+      }
+    }
 
     const heatmap = Object.values(daysMap);
     setStreakDays(heatmap);
@@ -111,7 +135,7 @@ export default function Dashboard() {
       const name = d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
       const ev = s.evaluations[0];
       
-      const sScore = ev.score || 0;
+      const sScore = ev.final_score || 0;
       const sViolations = s.violations || 0;
       const rawS = Array.isArray(ev.strengths) ? ev.strengths : (ev.strengths ? [ev.strengths] : []);
       const rawW = Array.isArray(ev.weaknesses) ? ev.weaknesses : (ev.weaknesses ? [ev.weaknesses] : []);
@@ -162,11 +186,33 @@ export default function Dashboard() {
       <div className="flex-between" style={{ marginBottom: '2rem' }}>
         <div>
           <h1 className="heading-2" style={{ marginBottom: '0.25rem' }}>Welcome Back</h1>
-          <p className="text-secondary">Ready to crush your next interview?</p>
+          <p className="text-secondary">Track your progress and keep the streak alive!</p>
         </div>
         <Button size="lg" onClick={handleStartSetup}>
           <Play size={18} /> Setup Mock Interview
         </Button>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', marginBottom: '2rem' }}>
+        <Card hover={false} style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+          <div style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '1rem', borderRadius: '50%' }}>
+            <LayoutDashboardIcon size={32} className="text-accent-primary" />
+          </div>
+          <div>
+            <h3 className="text-secondary" style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Total Interviews</h3>
+            <div className="text-gradient" style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{sessions.length}</div>
+          </div>
+        </Card>
+
+        <Card hover={false} style={{ padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
+          <div style={{ background: 'rgba(16, 185, 129, 0.1)', padding: '1rem', borderRadius: '50%' }}>
+            <Code size={32} style={{ color: '#10b981' }} />
+          </div>
+          <div>
+            <h3 className="text-secondary" style={{ fontSize: '1rem', marginBottom: '0.25rem' }}>Total Problems Solved</h3>
+            <div className="text-gradient" style={{ fontSize: '2.5rem', fontWeight: 'bold' }}>{totalProblems}</div>
+          </div>
+        </Card>
       </div>
 
       <div className="grid-cols-2" style={{ marginBottom: '2rem', gap: '2rem' }}>
@@ -246,7 +292,7 @@ export default function Dashboard() {
                       border: '1px solid var(--glass-border)',
                       zIndex: 50
                     }}>
-                      {day.isFuture ? 'Future' : `${day.count} interviews on ${day.date.toLocaleDateString()}`}
+                      {day.isFuture ? 'Future' : `${day.count - day.subs} interviews, ${day.subs} problems on ${day.date.toLocaleDateString()}`}
                       
                       {/* Tooltip Arrow */}
                       <div style={{

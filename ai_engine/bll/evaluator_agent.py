@@ -17,10 +17,19 @@ def generate_evaluation(session) -> dict:
     except ValueError:
         # Fallback to mock if no API key
         return {
-            "score": 85,
+            "scores": {
+                "problem_understanding": 80,
+                "approach": 85,
+                "code_quality": 90,
+                "edge_cases": 75,
+                "optimization": 80,
+                "communication": 85
+            },
+            "final_score": 85,
             "strengths": ["Clear communication", "Mock mode activated successfully"],
             "weaknesses": ["No actual code logic was tested", "Missing Groq API Key"],
-            "improvements": ["Set GROQ_API_KEY to receive real evaluations"]
+            "improvements": ["Set GROQ_API_KEY to receive real evaluations"],
+            "verdict": "hire"
         }
 
     lang_str = f"Language: {session.language}" if session.language else ""
@@ -45,10 +54,19 @@ def generate_evaluation(session) -> dict:
         "- You MUST ALWAYS explicitly state the Time and Space Complexity of their approach in your feedback (either as a strength or an improvement).\n\n"
         "You MUST respond with ONLY valid, raw JSON in exactly the following structure. No markdown formatting, no code blocks:\n"
         "{\n"
-        "  \"score\": 85,\n"
+        "  \"scores\": {\n"
+        "    \"problem_understanding\": 85,\n"
+        "    \"approach\": 90,\n"
+        "    \"code_quality\": 80,\n"
+        "    \"edge_cases\": 70,\n"
+        "    \"optimization\": 75,\n"
+        "    \"communication\": 90\n"
+        "  },\n"
+        "  \"final_score\": 82,\n"
         "  \"strengths\": [\"Strength 1\", \"Strength 2\"],\n"
         "  \"weaknesses\": [\"Weakness 1\"],\n"
-        "  \"improvements\": [\"Improvement 1\"]\n"
+        "  \"improvements\": [\"Improvement 1\"],\n"
+        "  \"verdict\": \"hire\"\n"
         "}"
     )
 
@@ -74,8 +92,17 @@ def generate_evaluation(session) -> dict:
     except Exception as e:
         print(f"Evaluator error: {e}")
         return {
-            "score": 0,
+            "scores": {
+                "problem_understanding": 0,
+                "approach": 0,
+                "code_quality": 0,
+                "edge_cases": 0,
+                "optimization": 0,
+                "communication": 0
+            },
+            "final_score": 0,
             "strengths": [],
             "weaknesses": ["Error running AI Evaluation"],
-            "improvements": [str(e)]
+            "improvements": [str(e)],
+            "verdict": "no_hire"
         }

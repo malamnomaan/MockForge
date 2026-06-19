@@ -20,7 +20,7 @@ export default function Login() {
     try {
       await authService.login(email, password);
       // Redirect to dashboard on success
-      navigate('/'); // Change this to '/dashboard' once it exists
+      navigate('/app');
     } catch (err) {
       if (err.response?.data && typeof err.response.data === 'object') {
         setErrors(err.response.data);

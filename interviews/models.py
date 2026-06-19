@@ -155,6 +155,10 @@ class InterviewSession(models.Model):
         help_text="Stores the conversation history with the AI agent.",
     )
     violations = models.PositiveIntegerField("violations", default=0, help_text="Number of anti-cheat violations detected.")
+    started_at = models.DateTimeField("started at", blank=True, null=True)
+    submitted_at = models.DateTimeField("submitted at", blank=True, null=True)
+    evaluated_at = models.DateTimeField("evaluated at", blank=True, null=True)
+    time_taken_seconds = models.PositiveIntegerField("time taken seconds", blank=True, null=True)
     created_at = models.DateTimeField("created at", auto_now_add=True)
     updated_at = models.DateTimeField("updated at", auto_now=True)
 
@@ -194,9 +198,21 @@ class AIEvaluation(models.Model):
         related_name="evaluations",
         verbose_name="interview session",
     )
-    score = models.PositiveSmallIntegerField(
-        "score",
+    final_score = models.PositiveSmallIntegerField(
+        "final score",
+        default=0,
         help_text="Overall score assigned by the AI evaluator (0-100).",
+    )
+    scores = models.JSONField(
+        "scores",
+        default=dict,
+        help_text="Nested dictionary of scores for problem understanding, approach, code quality, etc.",
+    )
+    verdict = models.CharField(
+        "verdict",
+        max_length=50,
+        blank=True,
+        help_text="Final decision (e.g. 'hire', 'no_hire').",
     )
     strengths = models.JSONField(
         "strengths",
@@ -230,4 +246,58 @@ class AIEvaluation(models.Model):
         ]
 
     def __str__(self):
-        return f"Evaluation for Session #{self.interview_id} — Score: {self.score}"
+        return f"Evaluation for Session #{self.interview_id} — Score: {self.final_score}"
+
+
+# ---------------------------------------------------------------------------
+# Skill Breakdown
+# ---------------------------------------------------------------------------
+
+class SkillBreakdown(models.Model):
+    """
+    Normalised storage for individual categorical scores returned by AI.
+    """
+    interview = models.ForeignKey(
+        InterviewSession,
+        on_delete=models.CASCADE,
+        related_name="skill_breakdowns",
+    )
+    category = models.CharField("category", max_length=100)
+    score = models.PositiveSmallIntegerField("score")
+
+    class Meta:
+        db_table = "interviews_skill_breakdown"
+        ordering = ["category"]
+        verbose_name = "skill breakdown"
+        verbose_name_plural = "skill breakdowns"
+        unique_together = ("interview", "category")
+
+    def __str__(self):
+        return f"{self.category}: {self.score}"
+
+
+# ---------------------------------------------------------------------------
+# User Performance
+# ---------------------------------------------------------------------------
+
+class UserPerformance(models.Model):
+    """
+    Aggregated performance metrics for a user across all mock interviews.
+    """
+    user = models.OneToOneField(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="performance",
+    )
+    avg_score = models.FloatField("average score", default=0.0)
+    last_score = models.PositiveSmallIntegerField("last score", blank=True, null=True)
+    total_attempts = models.PositiveIntegerField("total attempts", default=0)
+    weak_areas = models.JSONField("weak areas", default=list)
+
+    class Meta:
+        db_table = "interviews_user_performance"
+        verbose_name = "user performance"
+        verbose_name_plural = "user performances"
+
+    def __str__(self):
+        return f"Performance ({self.user_id}) - Avg: {self.avg_score:.2f}"

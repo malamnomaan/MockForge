@@ -13,7 +13,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
 
-from . import services
+from .models import InterviewSession, Status
+from .services.status_service import get_valid_transitions
+from .services.interview_db_service import get_user_sessions
+from .services.execute_service import execute_code
 from .models import InterviewSession, Status
 from .serializers import (
     InterviewSessionCreateSerializer,
@@ -24,6 +27,7 @@ from .serializers import (
     StatusTransitionActionSerializer,
     StatusTransitionSerializer,
 )
+from .bll import start_interview, submit_answer
 
 
 # ---------------------------------------------------------------------------
@@ -73,7 +77,7 @@ class StatusTransitionsView(generics.ListAPIView):
             code=self.kwargs["code"],
             is_active=True,
         )
-        return services.get_valid_transitions(status_obj)
+        return get_valid_transitions(status_obj)
 
 
 # ---------------------------------------------------------------------------
@@ -123,7 +127,25 @@ class InterviewSessionViewSet(viewsets.ModelViewSet):
         Uses :func:`services.get_user_sessions` which applies
         ``select_related`` and ``prefetch_related`` optimisations.
         """
-        return services.get_user_sessions(self.request.user)
+        return get_user_sessions(self.request.user)
+
+    # --- Standard Overrides --------------------------------------------------
+    
+    def list(self, request, *args, **kwargs):
+        queryset = self.filter_queryset(self.get_queryset())
+        serializer = self.get_serializer(queryset, many=True)
+        return Response({
+            "success": True,
+            "data": serializer.data
+        })
+        
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response({
+            "success": True,
+            "data": serializer.data
+        })
 
     # --- Create --------------------------------------------------------------
 
@@ -137,23 +159,49 @@ class InterviewSessionViewSet(viewsets.ModelViewSet):
     def create(self, request, *args, **kwargs):
         """
         Start a new interview session.
-
-        Accepts ``type`` and ``question``, assigns the initial interview
-        status, and returns the created session detail.
+        Delegates to BLL.
         """
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        session = serializer.save()
+        
+        session = start_interview(
+            user=request.user,
+            interview_type=serializer.validated_data.get("type"),
+            question=serializer.validated_data.get("question"),
+            language=serializer.validated_data.get("language", ""),
+            difficulty=serializer.validated_data.get("difficulty", "")
+        )
 
-        # Return the full detail representation of the newly created session.
         detail_serializer = InterviewSessionDetailSerializer(
             session,
             context=self.get_serializer_context(),
         )
-        return Response(
-            detail_serializer.data,
-            status=status.HTTP_201_CREATED,
+        return Response({
+            "success": True,
+            "data": detail_serializer.data
+        }, status=status.HTTP_201_CREATED)
+        
+    def partial_update(self, request, *args, **kwargs):
+        """
+        Submit / update answer using BLL.
+        """
+        session = self.get_object()
+        serializer = self.get_serializer(session, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        
+        answer = serializer.validated_data.get("answer", session.answer)
+        violations = serializer.validated_data.get("violations", session.violations)
+        
+        updated_session = submit_answer(session, answer, violations)
+        
+        detail_serializer = InterviewSessionDetailSerializer(
+            updated_session,
+            context=self.get_serializer_context(),
         )
+        return Response({
+            "success": True,
+            "data": detail_serializer.data
+        })
 
     # --- Custom action: transition -------------------------------------------
 
@@ -169,7 +217,8 @@ class InterviewSessionViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        updated_session = services.transition_status(
+        from interviews.bll.validate_transition import transition_status
+        updated_session = transition_status(
             session=session,
             to_status_code=serializer.validated_data["to_status_code"],
         )
@@ -178,7 +227,10 @@ class InterviewSessionViewSet(viewsets.ModelViewSet):
             updated_session,
             context=self.get_serializer_context(),
         )
-        return Response(detail_serializer.data)
+        return Response({
+            "success": True,
+            "data": detail_serializer.data
+        })
 
 
 class ExecuteCodeView(APIView):
@@ -198,5 +250,5 @@ class ExecuteCodeView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
             
-        result = services.execute_code(language, files)
+        result = execute_code(language, files)
         return Response(result)

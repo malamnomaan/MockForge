@@ -30,6 +30,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         default=False,
         help_text="Designates whether the user can log into the admin site.",
     )
+    
+    # Additional Profile Fields
+    bio = models.TextField("bio", max_length=500, blank=True)
+    target_role = models.CharField("target role", max_length=100, blank=True)
+    experience_level = models.CharField("experience level", max_length=50, blank=True)
+    github_url = models.URLField("github url", max_length=200, blank=True)
+    linkedin_url = models.URLField("linkedin url", max_length=200, blank=True)
+
     created_at = models.DateTimeField("created at", auto_now_add=True)
     updated_at = models.DateTimeField("updated at", auto_now=True)
 
@@ -50,3 +58,24 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_short_name(self):
         """Return the short name for the user."""
         return self.name.split()[0] if self.name else self.email
+
+class Badge(models.Model):
+    CATEGORY_CHOICES = (
+        ('streak', 'Streak'),
+        ('learning', 'Learning'),
+        ('cracking', 'Cracking'),
+    )
+
+    code = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=100)
+    description = models.TextField(blank=True)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
+    icon = models.CharField(max_length=50)
+    color = models.CharField(max_length=20)
+    requirement = models.PositiveIntegerField()
+
+    class Meta:
+        ordering = ['category', 'requirement']
+
+    def __str__(self):
+        return self.name

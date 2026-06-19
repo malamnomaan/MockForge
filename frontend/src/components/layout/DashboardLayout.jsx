@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Code, User, LogOut, Menu, X } from 'lucide-react';
+import { LayoutDashboard, History, User, LogOut, Menu, X, BookOpen } from 'lucide-react';
 import { useState } from 'react';
 import { authService } from '../../services/auth';
 import './DashboardLayout.css';
@@ -14,8 +14,9 @@ export default function DashboardLayout() {
   };
 
   const navItems = [
-    { name: 'Dashboard', path: '/app', icon: <LayoutDashboard size={20} />, end: true },
-    { name: 'Interviews', path: '/app/interviews', icon: <Code size={20} /> },
+    { name: 'Curriculum', path: '/app/problems', icon: <BookOpen size={20} /> },
+    { name: 'Progress', path: '/app', icon: <LayoutDashboard size={20} />, end: true },
+    { name: 'Past Interviews', path: '/app/interviews', icon: <History size={20} /> },
     { name: 'Profile', path: '/app/profile', icon: <User size={20} /> },
   ];
 

@@ -23,7 +23,9 @@ class AIEvaluationSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "interview",
-            "score",
+            "final_score",
+            "scores",
+            "verdict",
             "strengths",
             "weaknesses",
             "improvements",

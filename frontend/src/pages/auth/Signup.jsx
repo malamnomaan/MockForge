@@ -32,7 +32,7 @@ export default function Signup() {
       await authService.login(email, password);
       
       // 3. Redirect to dashboard
-      navigate('/');
+      navigate('/app');
     } catch (err) {
       if (err.response?.data && typeof err.response.data === 'object') {
         setErrors(err.response.data);
