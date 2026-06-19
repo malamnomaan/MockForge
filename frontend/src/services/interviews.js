@@ -16,8 +16,8 @@ export const interviewService = {
     return response.data;
   },
 
-  async createSession(type, question) {
-    const response = await api.post('/interviews/sessions/', { type, question });
+  async createSession(type, question, language = '', difficulty = '') {
+    const response = await api.post('/interviews/sessions/', { type, question, language, difficulty });
     return response.data;
   },
 
