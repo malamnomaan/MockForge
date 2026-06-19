@@ -87,8 +87,8 @@ import re
 
 def _execute_with_tests(code, language, test_cases):
     if language == "python" and test_cases:
-        match = re.search(r'def\s+([a-zA-Z_]\w*)\s*\(', code)
-        func_name = match.group(1) if match else "solve"
+        # Enforce that the user must implement the solve function
+        func_name = "solve"
         
         test_runner = "\n\n# --- Test Execution ---\nimport json\npassed=True\noutput_log=[]\n"
         for i, tc in enumerate(test_cases):
