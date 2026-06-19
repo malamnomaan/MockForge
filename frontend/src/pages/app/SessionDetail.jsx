@@ -5,7 +5,7 @@ import Card from '../../components/ui/Card';
 import Button from '../../components/ui/Button';
 import { interviewService } from '../../services/interviews';
 import { aiService } from '../../services/ai';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, AlertTriangle } from 'lucide-react';
 
 export default function SessionDetail() {
   const { id } = useParams();
@@ -33,6 +33,33 @@ export default function SessionDetail() {
 
   if (!session) return <div>Loading session data...</div>;
 
+  const renderAnswer = () => {
+    if (!session.answer) return <code>No answer submitted.</code>;
+    try {
+      const parsed = JSON.parse(session.answer);
+      if (Array.isArray(parsed)) {
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {parsed.map((f, i) => (
+              <div key={i}>
+                <div style={{ fontSize: '0.875rem', fontFamily: 'monospace', color: 'var(--accent-primary)', marginBottom: '0.5rem' }}>{f.name}</div>
+                <pre style={{ margin: 0, background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: 'var(--radius-sm)', overflowX: 'auto', border: '1px solid var(--glass-border)' }}>
+                  <code>{f.content}</code>
+                </pre>
+              </div>
+            ))}
+          </div>
+        );
+      }
+    } catch(e) {}
+    
+    return (
+      <pre style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: 'var(--radius-sm)', overflowX: 'auto', border: '1px solid var(--glass-border)' }}>
+        <code>{session.answer}</code>
+      </pre>
+    );
+  };
+
   return (
     <>
       <SEO title="Session Results" />
@@ -57,9 +84,7 @@ export default function SessionDetail() {
 
           <Card hover={false} style={{ padding: '1.5rem' }}>
             <h3 className="heading-3" style={{ marginBottom: '1rem', fontSize: '1.25rem' }}>Your Answer</h3>
-            <pre style={{ background: 'rgba(0,0,0,0.3)', padding: '1rem', borderRadius: 'var(--radius-sm)', overflowX: 'auto', border: '1px solid var(--glass-border)' }}>
-              <code>{session.answer || 'No answer submitted.'}</code>
-            </pre>
+            {renderAnswer()}
           </Card>
         </div>
 
@@ -74,10 +99,25 @@ export default function SessionDetail() {
             </Card>
           ) : evaluation ? (
             <div className="flex-col gap-md">
-              <Card hover={false} style={{ padding: '1.5rem', borderColor: 'var(--accent-primary)' }}>
+              <Card hover={false} style={{ padding: '1.5rem', borderColor: 'var(--accent-primary)', position: 'relative' }}>
                 <h3 className="heading-3" style={{ marginBottom: '1rem', fontSize: '1.25rem' }}>AI Score</h3>
                 <div className="text-gradient" style={{ fontSize: '4rem', fontWeight: 'bold', lineHeight: 1 }}>
                   {evaluation.score}/100
+                </div>
+
+                <div style={{ 
+                  position: 'absolute', top: '1.5rem', right: '1.5rem', 
+                  padding: '0.5rem 1rem', borderRadius: '1rem', fontWeight: 600, fontSize: '0.875rem',
+                  display: 'flex', alignItems: 'center', gap: '0.5rem',
+                  background: session.violations > 0 ? 'rgba(239, 68, 68, 0.1)' : 'rgba(16, 185, 129, 0.1)',
+                  color: session.violations > 0 ? '#ef4444' : '#10b981',
+                  border: session.violations > 0 ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(16, 185, 129, 0.3)'
+                }}>
+                  {session.violations > 0 ? (
+                    <><AlertTriangle size={16} /> {session.violations} Anti-Cheat Violations</>
+                  ) : (
+                    <>Clean Interview (0 Violations)</>
+                  )}
                 </div>
               </Card>
 

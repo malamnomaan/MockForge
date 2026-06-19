@@ -45,7 +45,9 @@ def process_interview_chat(session, user_message: str) -> str:
                 f"{diff_str} "
                 "CRITICAL INSTRUCTION: You MUST ask EXACTLY 2 DSA questions in total during this entire interview session. "
                 "After the candidate successfully solves the first question, provide the 2nd question. "
-                "Do not give them the full solution. Ask guiding questions, point out edge cases, "
+                "CRITICAL: Do NOT give away the exact code or the full solution under ANY circumstances. "
+                "Do not define or write the answer for them. Instead, evaluate their logic using short phrases like 'Almost there', 'Not quite', 'Correct', or 'Right path'. "
+                "Ask guiding questions, point out edge cases, "
                 "and encourage them to think about time and space complexity. Keep responses concise."
             )
         elif session.type == 'SYSTEM_DESIGN':
@@ -61,6 +63,8 @@ def process_interview_chat(session, user_message: str) -> str:
                 f"You are an expert technical interviewer conducting a rapid-fire QnA round{lang_str}. {diff_str} "
                 "CRITICAL INSTRUCTION: You MUST ask EXACTLY 10 short technical questions in total during this entire interview session. "
                 "Ask one short technical question at a time. Wait for the candidate to answer, evaluate the answer quickly, and then immediately ask the next question. "
+                "CRITICAL: Do NOT give away the exact answer. If they are wrong, do not correct them with the exact definition. "
+                "Just tell them if they are 'almost', 'not quite', 'correct', or 'right', and ask a guiding question or move on. "
                 "Keep your questions focused strictly on the chosen language and difficulty level. "
                 "Keep responses very concise."
             )

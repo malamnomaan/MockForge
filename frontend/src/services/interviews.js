@@ -21,8 +21,8 @@ export const interviewService = {
     return response.data;
   },
 
-  async submitAnswer(id, answer) {
-    const response = await api.patch(`/interviews/sessions/${id}/`, { answer });
+  async submitAnswer(id, answer, violations = 0) {
+    const response = await api.patch(`/interviews/sessions/${id}/`, { answer, violations });
     return response.data;
   },
 
@@ -30,6 +30,11 @@ export const interviewService = {
     const response = await api.post(`/interviews/sessions/${id}/transition/`, { 
       to_status_code: toStatusCode 
     });
+    return response.data;
+  },
+
+  executeCode: async (language, files) => {
+    const response = await api.post(`/interviews/execute/`, { language, files });
     return response.data;
   }
 };
