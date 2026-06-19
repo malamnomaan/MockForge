@@ -9,7 +9,7 @@ Routes
 
 from django.urls import path
 
-from ai_engine.views import SessionEvaluationsView, TriggerEvaluationView
+from ai_engine.views import SessionEvaluationsView, TriggerEvaluationView, ChatAPIView
 
 app_name = "ai_engine"
 
@@ -23,5 +23,10 @@ urlpatterns = [
         "evaluations/<int:session_id>/",
         SessionEvaluationsView.as_view(),
         name="session-evaluations",
+    ),
+    path(
+        'chat/<int:session_id>/',
+        ChatAPIView.as_view(),
+        name='session-chat'
     ),
 ]
